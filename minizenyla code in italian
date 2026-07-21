@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>MiniZenyla 🤖</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#151525;
+    color:white;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.box{
+    background:#252545;
+    width:380px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 0 20px #6c5ce7;
+}
+
+h2{
+    text-align:center;
+}
+
+#chat{
+    height:250px;
+    overflow:auto;
+    background:#111122;
+    padding:10px;
+    border-radius:10px;
+}
+
+input{
+    width:70%;
+    padding:10px;
+    border-radius:10px;
+    border:0;
+}
+
+button{
+    padding:10px;
+    border:0;
+    border-radius:10px;
+    background:#6c5ce7;
+    color:white;
+    cursor:pointer;
+}
+
+.messaggio{
+    margin:8px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>💜 MiniZenyla</h2>
+
+<div id="chat"></div>
+
+<br>
+
+<input id="testo" placeholder="Scrivi qualcosa...">
+
+<button onclick="rispondi()">➤</button>
+
+<br><br>
+
+<button onclick="cancella()">🗑️ Cancella memoria</button>
+
+<button onclick="muta()">🔊/🔇 Voce</button>
+
+</div>
+
+
+<script>
+
+let messaggi = 0;
+let voceAttiva = true;
+
+let memoria = JSON.parse(localStorage.getItem("chat")) || [];
+
+let sconosciute=[
+"Non ho capito 🤔",
+"Interessante!",
+"Puoi spiegarmi meglio?",
+"Questa è una domanda difficile 😅"
+];
+
+
+function mostraChat(){
+
+let chat=document.getElementById("chat");
+
+chat.innerHTML="";
+
+memoria.forEach(m=>{
+chat.innerHTML += `
+<div class="messaggio">
+<b>${m.tipo}:</b> ${m.testo}
+</div>`;
+});
+
+chat.scrollTop=chat.scrollHeight;
+
+}
+
+
+function salva(tipo,testo){
+
+memoria.push({
+tipo:tipo,
+testo:testo
+});
+
+localStorage.setItem("chat",JSON.stringify(memoria));
+
+mostraChat();
+if(tipo=="Zenyla" && voceAttiva){
+
+    parla(testo);
+
+}
+
+
+
+function rispondi(){
+
+let input=document.getElementById("testo");
+
+let testo=input.value.toLowerCase();
+
+if(testo=="") return;
+
+
+messaggi++;
+
+salva("Tu",testo);
+
+
+let risposta=sconosciute[Math.floor(Math.random()*sconosciute.length)];
+
+
+if(testo.includes("ciao"))
+risposta="Ciao! Sono MiniZenyla 💜";
+
+
+else if(testo.includes("come stai"))
+risposta="Sto funzionando alla grande 🤖";
+
+
+else if(testo.includes("chi sei"))
+risposta="Sono MiniZenyla, una piccola IA creata con JavaScript";
+
+
+else if(testo.includes("nome"))
+risposta="Il mio nome è MiniZenyla";
+
+
+else if(testo.includes("che ore sono?"))
+risposta="Sono le "+new Date().toLocaleTimeString();
+
+
+else if(testo.includes("data"))
+risposta="Oggi è "+new Date().toLocaleDateString();
+
+
+else if(testo.includes("colore"))
+risposta="Il viola 💜";
+
+
+else if(testo.includes("dado"))
+risposta="🎲 Hai ottenuto "+(Math.floor(Math.random()*6)+1);
+
+
+else if(testo.includes("testa") || testo.includes("croce"))
+risposta=Math.random()<0.5?"🪙 Testa":"🪙 Croce";
+
+
+else if(testo.includes("barzelletta"))
+risposta="Perché il computer è andato dal medico? Perché aveva un virus 😂";
+
+
+else if(testo.includes("parla")){
+parla("Ciao! Sono MiniZenyla");
+risposta="Ho usato la mia voce 🔊";
+}
+
+
+salva("Zenyla",risposta);
+
+input.value="";
+
+
+}
+
+
+function parla(testo){
+
+let voce=new SpeechSynthesisUtterance(testo);
+
+voce.lang="it-IT";
+
+speechSynthesis.speak(voce);
+
+}
+
+
+
+function cancella(){
+
+memoria=[];
+
+localStorage.removeItem("chat");
+
+mostraChat();
+
+}
+
+
+document.getElementById("testo").addEventListener("keydown",e=>{
+
+if(e.key === "Enter" && !e.shiftKey)
+rispondi();
+
+});
+
+
+mostraChat();
+
+function muta(){
+
+voceAttiva = !voceAttiva;
+
+if(voceAttiva){
+    alert("🔊 Voce attivata");
+}else{
+    speechSynthesis.cancel();
+    alert("🔇 Voce disattivata");
+}
+
+}
+
+</script>
+
+</body>
+</html>
