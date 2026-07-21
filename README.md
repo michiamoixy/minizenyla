@@ -1,9 +1,9 @@
-#🇺🇸reed the caption 
-#🇮🇹leggi al descrizone 
+# 🇺🇸reed the caption 
+# 🇮🇹leggi al descrizone 
 
 
-#🇺🇸explanation by minizenyla
-#🇺🇸💜 MiniZenyla AI
+# 🇺🇸explanation by minizenyla
+##🇺🇸💜 MiniZenyla AI
 
 MiniZenyla is a small virtual assistant created in HTML, CSS, and JavaScript.
 
@@ -31,8 +31,8 @@ Created by: Francesco
 
 
 
-#🇮🇹spiegazione di mini zenyla 
-# 💜 MiniZenyla AI
+# 🇮🇹spiegazione di mini zenyla 
+##💜 MiniZenyla AI
 
 MiniZenyla è un piccolo assistente virtuale creato in HTML, CSS e JavaScript.
 
