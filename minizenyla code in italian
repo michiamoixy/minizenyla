@@ -80,7 +80,6 @@ button{
 
 </div>
 
-
 <script>
 
 let messaggi = 0;
@@ -94,7 +93,6 @@ let sconosciute=[
 "Puoi spiegarmi meglio?",
 "Questa è una domanda difficile 😅"
 ];
-
 
 function mostraChat(){
 
@@ -113,7 +111,6 @@ chat.scrollTop=chat.scrollHeight;
 
 }
 
-
 function salva(tipo,testo){
 
 memoria.push({
@@ -128,10 +125,9 @@ if(tipo=="Zenyla" && voceAttiva){
 
     parla(testo);
 
+  }
+
 }
-
-
-
 function rispondi(){
 
 let input=document.getElementById("testo");
@@ -140,68 +136,52 @@ let testo=input.value.toLowerCase();
 
 if(testo=="") return;
 
-
 messaggi++;
 
 salva("Tu",testo);
 
-
 let risposta=sconosciute[Math.floor(Math.random()*sconosciute.length)];
-
 
 if(testo.includes("ciao"))
 risposta="Ciao! Sono MiniZenyla 💜";
 
-
 else if(testo.includes("come stai"))
 risposta="Sto funzionando alla grande 🤖";
-
 
 else if(testo.includes("chi sei"))
 risposta="Sono MiniZenyla, una piccola IA creata con JavaScript";
 
-
 else if(testo.includes("nome"))
 risposta="Il mio nome è MiniZenyla";
-
 
 else if(testo.includes("che ore sono?"))
 risposta="Sono le "+new Date().toLocaleTimeString();
 
-
 else if(testo.includes("data"))
 risposta="Oggi è "+new Date().toLocaleDateString();
-
 
 else if(testo.includes("colore"))
 risposta="Il viola 💜";
 
-
 else if(testo.includes("dado"))
 risposta="🎲 Hai ottenuto "+(Math.floor(Math.random()*6)+1);
-
 
 else if(testo.includes("testa") || testo.includes("croce"))
 risposta=Math.random()<0.5?"🪙 Testa":"🪙 Croce";
 
-
 else if(testo.includes("barzelletta"))
 risposta="Perché il computer è andato dal medico? Perché aveva un virus 😂";
-
 
 else if(testo.includes("parla")){
 parla("Ciao! Sono MiniZenyla");
 risposta="Ho usato la mia voce 🔊";
 }
 
-
 salva("Zenyla",risposta);
 
 input.value="";
 
-
 }
-
 
 function parla(testo){
 
@@ -213,8 +193,6 @@ speechSynthesis.speak(voce);
 
 }
 
-
-
 function cancella(){
 
 memoria=[];
@@ -225,14 +203,12 @@ mostraChat();
 
 }
 
-
 document.getElementById("testo").addEventListener("keydown",e=>{
 
 if(e.key === "Enter" && !e.shiftKey)
 rispondi();
 
 });
-
 
 mostraChat();
 
