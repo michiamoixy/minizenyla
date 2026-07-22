@@ -87,6 +87,13 @@ let voceAttiva = true;
 
 let memoria = JSON.parse(localStorage.getItem("chat")) || [];
 
+let memoriaIA = JSON.parse(localStorage.getItem("memoriaIA")) || {
+    nome: "",
+    colore: "",
+    hobby: "",
+    cibo: ""
+};
+
 let sconosciute=[
 "Non ho capito 🤔",
 "Interessante!",
@@ -140,6 +147,30 @@ messaggi++;
 
 salva("Tu",testo);
 
+// Memoria intelligente
+
+if (testo.startsWith("mi chiamo ")) {
+    memoriaIA.nome = testo.replace("mi chiamo ", "").trim();
+    localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
+
+    risposta = "Piacere di conoscerti, " + memoriaIA.nome + "! 😊 Lo ricorderò.";
+}
+
+if (testo.startsWith("il mio colore preferito è ")) {
+    memoriaIA.colore = testo.replace("il mio colore preferito è ", "");
+    localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
+}
+
+if (testo.startsWith("il mio hobby è ")) {
+    memoriaIA.hobby = testo.replace("il mio hobby è ", "");
+    localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
+}
+
+if (testo.startsWith("il mio cibo preferito è ")) {
+    memoriaIA.cibo = testo.replace("il mio cibo preferito è ", "");
+    localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
+}
+
 let risposta=sconosciute[Math.floor(Math.random()*sconosciute.length)];
 
 if(testo.includes("ciao"))
@@ -172,6 +203,43 @@ risposta=Math.random()<0.5?"🪙 Testa":"🪙 Croce";
 else if(testo.includes("barzelletta"))
 risposta="Perché il computer è andato dal medico? Perché aveva un virus 😂";
 
+else if(testo.includes("come mi chiamo")){
+
+    if(memoriaIA.nome!="")
+        risposta="Ti chiami " + memoriaIA.nome + " 😊";
+    else
+        risposta="Non me lo hai ancora detto.";
+
+}
+
+else if(testo.includes("qual è il mio colore preferito")){
+
+    if(memoriaIA.colore!="")
+        risposta="Il tuo colore preferito è " + memoriaIA.colore + " 💜";
+    else
+        risposta="Non me lo hai ancora detto.";
+
+}
+
+else if(testo.includes("qual è il mio hobby")){
+
+    if(memoriaIA.hobby!="")
+        risposta="Il tuo hobby è " + memoriaIA.hobby;
+    else
+        risposta="Non me lo hai ancora detto.";
+
+}
+
+else if(testo.includes("qual è il mio cibo preferito")){
+
+    if(memoriaIA.cibo!="")
+        risposta="Il tuo cibo preferito è " + memoriaIA.cibo + " 🍕";
+    else
+        risposta="Non me lo hai ancora detto.";
+
+}
+
+
 else if(testo.includes("parla")){
 parla("Ciao! Sono MiniZenyla");
 risposta="Ho usato la mia voce 🔊";
@@ -195,11 +263,19 @@ speechSynthesis.speak(voce);
 
 function cancella(){
 
-memoria=[];
+    memoria = [];
 
-localStorage.removeItem("chat");
+    memoriaIA = {
+        nome:"",
+        colore:"",
+        hobby:"",
+        cibo:""
+    };
 
-mostraChat();
+    localStorage.removeItem("chat");
+    localStorage.removeItem("memoriaIA");
+
+    mostraChat();
 
 }
 
