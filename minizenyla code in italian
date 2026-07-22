@@ -31,7 +31,6 @@ body{
     height: 90vh;
 }
 
-/* SIDEBAR SINISTRA */
 .sidebar {
     background: #1a1a2e;
     width: 250px;
@@ -97,7 +96,6 @@ body{
     opacity: 1;
 }
 
-/* BOX PRINCIPALE */
 .box {
     background: #252545;
     flex: 1;
@@ -208,7 +206,6 @@ button#voiceBtn.attivo {
     50% { opacity: 0.6; }
 }
 
-/* MODALE IMPOSTAZIONI */
 .modal {
     display: none;
     position: fixed;
@@ -235,6 +232,11 @@ button#voiceBtn.attivo {
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 0 30px #6c5ce7;
+}
+
+.modal-content.large {
+    max-width: 90%;
+    max-height: 85vh;
 }
 
 .modal-header {
@@ -306,7 +308,6 @@ button#voiceBtn.attivo {
     font-size: 14px;
 }
 
-/* SEZIONE COMANDI */
 .commands-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -336,7 +337,71 @@ button#voiceBtn.attivo {
     color: #ddd;
 }
 
-/* MOBILE RESPONSIVE */
+/* AGENT MODE */
+.agent-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    height: 100%;
+}
+
+.agent-section {
+    background: #1a1a2e;
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid #6c5ce7;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.agent-section h3 {
+    color: #6c5ce7;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+#codeInput {
+    width: 100%;
+    height: 200px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #6c5ce7;
+    background: #111122;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    resize: none;
+    flex: 1;
+}
+
+.analysis-box {
+    background: #252545;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border-left: 3px solid #6c5ce7;
+    font-size: 13px;
+}
+
+.analysis-box strong {
+    color: #ffd700;
+}
+
+.step-item {
+    background: rgba(108, 92, 231, 0.2);
+    padding: 10px;
+    border-radius: 6px;
+    margin: 8px 0;
+    border-left: 3px solid #ffd700;
+    font-size: 13px;
+}
+
+.step-item.done {
+    border-left-color: #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+}
+
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
@@ -377,6 +442,10 @@ button#voiceBtn.attivo {
         padding: 15px;
     }
 
+    .modal-content.large {
+        max-width: 98%;
+    }
+
     .commands-grid {
         grid-template-columns: 1fr;
     }
@@ -386,45 +455,11 @@ button#voiceBtn.attivo {
     }
 
     input[type="text"] {
-        font-size: 16px; /* Previene zoom su iOS */
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        padding: 5px;
+        font-size: 16px;
     }
 
-    .box {
-        border-radius: 10px;
-        padding: 10px;
-    }
-
-    .header {
-        margin-bottom: 10px;
-    }
-
-    h2 {
-        font-size: 18px;
-    }
-
-    button {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-
-    .modal-content {
-        width: 98%;
-        padding: 12px;
-    }
-
-    .tab-buttons {
-        gap: 5px;
-    }
-
-    .tab-btn {
-        padding: 8px 12px;
-        font-size: 12px;
+    .agent-panel {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -448,6 +483,24 @@ button#voiceBtn.attivo {
         display: block;
     }
 }
+
+.agent-btn {
+    background: linear-gradient(135deg, #6c5ce7, #00d4ff);
+}
+
+.agent-btn:hover {
+    background: linear-gradient(135deg, #7b68ee, #00e5ff);
+}
+
+.btn-analyze {
+    margin-top: 10px;
+    background: #00ff00;
+    color: #000;
+}
+
+.btn-analyze:hover {
+    background: #00dd00;
+}
 </style>
 
 </head>
@@ -455,33 +508,28 @@ button#voiceBtn.attivo {
 <body>
 
 <div class="container">
-    <!-- SIDEBAR CHAT -->
     <div class="sidebar" id="sidebar">
         <h3>💬 Chat</h3>
         <div class="chat-list" id="chatList"></div>
     </div>
 
-    <!-- BOX PRINCIPALE -->
     <div class="box">
-        <!-- HEADER -->
         <div class="header">
             <h2>💜 MiniZenyla</h2>
             <div class="header-buttons">
                 <button class="toggle-sidebar" onclick="toggleSidebar()">☰ Chat</button>
+                <button class="agent-btn" onclick="toggleAgent()">🤖 Agent</button>
                 <button onclick="toggleSettings()">⚙️ Impostazioni</button>
             </div>
         </div>
 
-        <!-- CHAT AREA -->
         <div id="chat"></div>
 
-        <!-- INPUT -->
         <div class="input-area">
             <input type="text" id="testo" placeholder="Scrivi qualcosa...">
             <button onclick="rispondi()">➤</button>
         </div>
 
-        <!-- BUTTONS ROW -->
         <div class="buttons-row">
             <button onclick="cancellaChat()">🗑️ Svuota</button>
             <button id="voiceBtn" onclick="muta()">🔊 Voce</button>
@@ -498,14 +546,12 @@ button#voiceBtn.attivo {
             <button class="close-btn" onclick="toggleSettings()">✕</button>
         </div>
 
-        <!-- TABS -->
         <div class="tab-buttons">
             <button class="tab-btn active" onclick="switchTab('generale')">Generale</button>
             <button class="tab-btn" onclick="switchTab('comandi')">📖 Comandi</button>
             <button class="tab-btn" onclick="switchTab('api')">🔑 API</button>
         </div>
 
-        <!-- TAB GENERALE -->
         <div id="generale" class="tab-content active">
             <h3>Preferenze Generali</h3>
             
@@ -539,13 +585,11 @@ button#voiceBtn.attivo {
             </div>
         </div>
 
-        <!-- TAB COMANDI -->
         <div id="comandi" class="tab-content">
             <h3>📖 Comandi Disponibili</h3>
             <div class="commands-grid" id="comandiGrid"></div>
         </div>
 
-        <!-- TAB API -->
         <div id="api" class="tab-content">
             <h3>🔑 Configurazione API</h3>
             
@@ -565,9 +609,39 @@ button#voiceBtn.attivo {
     </div>
 </div>
 
+<!-- MODALE AGENT MODE -->
+<div class="modal" id="agentModal">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h2>🤖 Agent Mode - Analyzer</h2>
+            <button class="close-btn" onclick="toggleAgent()">✕</button>
+        </div>
+
+        <div class="agent-panel">
+            <!-- INPUT -->
+            <div class="agent-section">
+                <h3>📝 INPUT: Incolla Codice</h3>
+                <textarea id="codeInput" placeholder="Incolla il codice qui..."></textarea>
+                <button class="btn-analyze" onclick="analyzeCode()">🔍 Analizza</button>
+            </div>
+
+            <!-- ANALISI -->
+            <div class="agent-section">
+                <h3>📊 ANALISI</h3>
+                <div id="analysisResult"></div>
+            </div>
+
+            <!-- PIANO -->
+            <div class="agent-section" style="grid-column: 1/-1;">
+                <h3>🎯 PIANO DI AZIONE (5 Step)</h3>
+                <div id="planResult"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 
-// ===== LINGUE COMPLETE =====
 let linguaAttuale = localStorage.getItem("lingua") || "it";
 
 let traduzioni = {
@@ -643,7 +717,6 @@ function t(chiave) {
     return traduzioni[linguaAttuale][chiave] || chiave;
 }
 
-// ===== VARIABILI PRINCIPALI =====
 let voceAttiva = JSON.parse(localStorage.getItem("voceAttiva") ?? "true");
 let chatAttuale = localStorage.getItem("chatAttuale") || "Chat 1";
 let listaChat = JSON.parse(localStorage.getItem("listaChat")) || ["Chat 1"];
@@ -654,23 +727,22 @@ let memoriaIA = JSON.parse(localStorage.getItem("memoriaIA")) || {
 
 let animazioniAttive = localStorage.getItem("animazioni") !== "off";
 
-// ===== UI FUNCTIONS =====
 function toggleSettings() {
-    let modal = document.getElementById("settingsModal");
-    modal.classList.toggle("active");
+    document.getElementById("settingsModal").classList.toggle("active");
+}
+
+function toggleAgent() {
+    document.getElementById("agentModal").classList.toggle("active");
 }
 
 function toggleSidebar() {
-    let sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("active");
+    document.getElementById("sidebar").classList.toggle("active");
 }
 
 function switchTab(tabName) {
-    // Nascondi tutti i tab
     document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
     
-    // Mostra il tab selezionato
     document.getElementById(tabName).classList.add("active");
     event.target.classList.add("active");
 }
@@ -687,11 +759,9 @@ function cambiaLingua() {
 }
 
 function aggiornaTasti() {
-    let btn = document.getElementById("voiceBtn");
-    btn.textContent = voceAttiva ? t("voce") : t("muto");
+    document.getElementById("voiceBtn").textContent = voceAttiva ? t("voce") : t("muto");
 }
 
-// ===== CHAT FUNCTIONS =====
 function mostraChat() {
     let chat = document.getElementById("chat");
     chat.innerHTML = "";
@@ -725,12 +795,11 @@ function rispondi() {
     
     salva("Tu", testo);
     
-    // Memoria intelligente
     if (testo.startsWith("mi chiamo ") || testo.startsWith("my name is ")) {
         let nome = testo.startsWith("mi chiamo ") ? testo.replace("mi chiamo ", "").trim() : testo.replace("my name is ", "").trim();
         memoriaIA.nome = nome;
         localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
-        salva("Zenyla", (linguaAttuale === "it" ? "Piacere di conoscerti, " : "Nice to meet you, ") + nome + (linguaAttuale === "it" ? "! 😊" : "! 😊"));
+        salva("Zenyla", (linguaAttuale === "it" ? "Piacere di conoscerti, " : "Nice to meet you, ") + nome + "! 😊");
     }
     
     if (testo.startsWith("il mio colore preferito è ") || testo.startsWith("my favorite color is ")) {
@@ -801,7 +870,6 @@ function muta() {
     
     if(!voceAttiva) speechSynthesis.cancel();
     
-    // Animazione di 5 secondi se attivo
     if(animazioniAttive) {
         btn.style.animation = "none";
         setTimeout(() => {
@@ -810,7 +878,6 @@ function muta() {
     }
 }
 
-// ===== CHAT MULTIPLI =====
 function aggiornaListaChat() {
     let chatList = document.getElementById("chatList");
     chatList.innerHTML = "";
@@ -855,7 +922,6 @@ function eliminaChat(nome, event) {
     }
 }
 
-// ===== COMANDI =====
 function mostraComandi() {
     let grid = document.getElementById("comandiGrid");
     grid.innerHTML = "";
@@ -874,7 +940,6 @@ function mostraComandi() {
     }
 }
 
-// ===== API =====
 function cercaGoogle(query) {
     let bingKey = localStorage.getItem("bing_key");
     if(!bingKey) {
@@ -917,6 +982,72 @@ function salvaApiKeys() {
     let hasOpenAI = localStorage.getItem("openai_key") ? "✓" : "✗";
     let hasBing = localStorage.getItem("bing_key") ? "✓" : "✗";
     document.getElementById("apiStatus").innerHTML = `✅ OpenAI: ${hasOpenAI} | Bing: ${hasBing}`;
+}
+
+// ===== AGENT MODE FASE 1 + FASE 2 =====
+function analyzeCode() {
+    let code = document.getElementById("codeInput").value.trim();
+    
+    if(!code) {
+        alert("Incolla il codice!");
+        return;
+    }
+    
+    // FASE 2: ANALIZZA
+    let lines = code.split('\n').length;
+    let language = detectLanguage(code);
+    let functions = (code.match(/function\s+\w+|const\s+\w+\s*=\s*\(|def\s+\w+/g) || []).length;
+    let errors = detectErrors(code);
+    
+    // Mostra analisi
+    let analysisHTML = `
+        <div class="analysis-box">
+            <strong>📊 Linguaggio:</strong> ${language}
+        </div>
+        <div class="analysis-box">
+            <strong>📝 Linee:</strong> ${lines}
+        </div>
+        <div class="analysis-box">
+            <strong>⚙️ Funzioni:</strong> ${functions}
+        </div>
+        <div class="analysis-box">
+            <strong>⚠️ Errori:</strong> ${errors.join(", ")}
+        </div>
+    `;
+    
+    document.getElementById("analysisResult").innerHTML = analysisHTML;
+    
+    // FASE 2: CREA PIANO
+    let plan = [
+        "1️⃣ Analizzare la struttura del codice",
+        "2️⃣ Controllare gli errori di sintassi",
+        "3️⃣ Ottimizzare le performance",
+        "4️⃣ Aggiungere commenti esplicativi",
+        "5️⃣ Formattare e pulire il codice"
+    ];
+    
+    let planHTML = plan.map(p => `<div class="step-item">${p}</div>`).join("");
+    
+    document.getElementById("planResult").innerHTML = planHTML;
+    
+    salva("Zenyla", `✅ Ho analizzato il codice!\n📊 ${language} | ${lines} linee | ${functions} funzioni\n⚠️ Errori: ${errors.join(", ")}`);
+}
+
+function detectLanguage(code) {
+    if(code.includes("function ") || code.includes("const ") || code.includes("let ")) return "JavaScript";
+    if(code.includes("def ") || code.includes("import ")) return "Python";
+    if(code.includes("class ") && code.includes("public ")) return "Java";
+    if(code.includes("<!DOCTYPE") || code.includes("<html")) return "HTML";
+    if(code.includes("body {") || code.includes(".class {")) return "CSS";
+    return "Unknown";
+}
+
+function detectErrors(code) {
+    let errors = [];
+    if((code.match(/\(/g) || []).length !== (code.match(/\)/g) || []).length) errors.push("Parentesi non bilanciate");
+    if((code.match(/\{/g) || []).length !== (code.match(/\}/g) || []).length) errors.push("Graffe non bilanciate");
+    if((code.match(/\[/g) || []).length !== (code.match(/\]/g) || []).length) errors.push("Parentesi quadre non bilanciate");
+    return errors.length > 0 ? errors : ["✓ Nessun errore"];
 }
 
 // ===== INIT =====
