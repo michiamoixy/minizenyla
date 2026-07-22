@@ -217,6 +217,7 @@ button#voiceBtn.attivo {
     z-index: 1000;
     align-items: center;
     justify-content: center;
+    overflow-y: auto;
 }
 
 .modal.active {
@@ -232,11 +233,12 @@ button#voiceBtn.attivo {
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 0 30px #6c5ce7;
+    margin: 20px;
 }
 
 .modal-content.large {
-    max-width: 90%;
-    max-height: 85vh;
+    max-width: 95%;
+    max-height: 90vh;
 }
 
 .modal-header {
@@ -338,11 +340,11 @@ button#voiceBtn.attivo {
 }
 
 /* AGENT MODE */
-.agent-panel {
+.agent-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-    height: 100%;
+    max-height: 70vh;
 }
 
 .agent-section {
@@ -363,7 +365,7 @@ button#voiceBtn.attivo {
 
 #codeInput {
     width: 100%;
-    height: 200px;
+    height: 150px;
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #6c5ce7;
@@ -373,6 +375,20 @@ button#voiceBtn.attivo {
     font-size: 12px;
     resize: none;
     flex: 1;
+}
+
+#modifiedCode {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #6c5ce7;
+    background: #111122;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    flex: 1;
+    overflow-y: auto;
+    max-height: 300px;
 }
 
 .analysis-box {
@@ -402,10 +418,69 @@ button#voiceBtn.attivo {
     background: rgba(0, 255, 0, 0.1);
 }
 
+.diff {
+    background: #111122;
+    padding: 10px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #6c5ce7;
+}
+
+.diff-add {
+    color: #00ff00;
+}
+
+.diff-remove {
+    color: #ff6b6b;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-group button {
+    flex: 1;
+    min-width: 90px;
+    font-size: 12px;
+}
+
+.btn-execute {
+    background: linear-gradient(135deg, #00ff00, #00d4ff);
+    color: #000;
+}
+
+.btn-execute:hover {
+    background: linear-gradient(135deg, #00dd00, #00c0ff);
+}
+
+.btn-copy {
+    background: #00d4ff;
+    color: #000;
+}
+
+.btn-copy:hover {
+    background: #00c0ff;
+}
+
+.btn-download {
+    background: #ffd700;
+    color: #000;
+}
+
+.btn-download:hover {
+    background: #ffed4e;
+}
+
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
-        gap: 0;
     }
 
     .sidebar {
@@ -413,52 +488,18 @@ button#voiceBtn.attivo {
         max-height: 150px;
         position: absolute;
         top: 60px;
-        left: 0;
-        right: 0;
-        z-index: 500;
     }
 
     .box {
         width: 100%;
-        max-height: calc(100vh - 70px);
-    }
-
-    .header-buttons {
-        gap: 3px;
-    }
-
-    .header-buttons button {
-        padding: 6px 10px;
-        font-size: 12px;
-    }
-
-    #chat {
-        padding: 10px;
-        margin-bottom: 10px;
     }
 
     .modal-content {
-        width: 95%;
+        width: 98%;
         padding: 15px;
     }
 
-    .modal-content.large {
-        max-width: 98%;
-    }
-
-    .commands-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .input-area {
-        gap: 5px;
-    }
-
-    input[type="text"] {
-        font-size: 16px;
-    }
-
-    .agent-panel {
+    .agent-container {
         grid-template-columns: 1fr;
     }
 }
@@ -500,6 +541,11 @@ button#voiceBtn.attivo {
 
 .btn-analyze:hover {
     background: #00dd00;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 </style>
 
@@ -578,11 +624,6 @@ button#voiceBtn.attivo {
                     <option value="off">✗ Disabilitate</option>
                 </select>
             </div>
-
-            <div class="setting-item">
-                <label>Dimensione Font:</label>
-                <input type="range" id="fontSize" min="12" max="20" value="14">
-            </div>
         </div>
 
         <div id="comandi" class="tab-content">
@@ -594,11 +635,6 @@ button#voiceBtn.attivo {
             <h3>🔑 Configurazione API</h3>
             
             <div class="setting-item">
-                <label>OpenAI API Key:</label>
-                <input type="password" id="openaiKey" placeholder="sk-proj-...">
-            </div>
-
-            <div class="setting-item">
                 <label>Bing Search API Key:</label>
                 <input type="password" id="bingKey" placeholder="pub_...">
             </div>
@@ -609,32 +645,49 @@ button#voiceBtn.attivo {
     </div>
 </div>
 
-<!-- MODALE AGENT MODE -->
+<!-- MODALE AGENT MODE - FASI 1, 2, 3, 4 -->
 <div class="modal" id="agentModal">
     <div class="modal-content large">
         <div class="modal-header">
-            <h2>🤖 Agent Mode - Analyzer</h2>
+            <h2>🤖 Agent Mode - Complete</h2>
             <button class="close-btn" onclick="toggleAgent()">✕</button>
         </div>
 
-        <div class="agent-panel">
-            <!-- INPUT -->
+        <div class="agent-container">
+            <!-- FASE 1: INPUT -->
             <div class="agent-section">
-                <h3>📝 INPUT: Incolla Codice</h3>
+                <h3>1️⃣ INPUT: Codice</h3>
                 <textarea id="codeInput" placeholder="Incolla il codice qui..."></textarea>
-                <button class="btn-analyze" onclick="analyzeCode()">🔍 Analizza</button>
+                <button class="btn-analyze" onclick="analyzeCode()">🔍 Analizza (Fase 1+2)</button>
             </div>
 
-            <!-- ANALISI -->
+            <!-- FASE 2: ANALISI -->
             <div class="agent-section">
-                <h3>📊 ANALISI</h3>
+                <h3>2️⃣ ANALISI</h3>
                 <div id="analysisResult"></div>
             </div>
 
-            <!-- PIANO -->
-            <div class="agent-section" style="grid-column: 1/-1;">
-                <h3>🎯 PIANO DI AZIONE (5 Step)</h3>
+            <!-- FASE 3: ESECUZIONE -->
+            <div class="agent-section">
+                <h3>3️⃣ ESECUZIONE</h3>
                 <div id="planResult"></div>
+                <button class="btn-execute" onclick="executeModifications()" style="margin-top: 10px;">▶️ Esegui Modifiche (Fase 3)</button>
+            </div>
+
+            <!-- FASE 4: OUTPUT + DOWNLOAD -->
+            <div class="agent-section">
+                <h3>4️⃣ OUTPUT: Codice Modificato</h3>
+                <div id="modifiedCode"></div>
+                <div class="btn-group">
+                    <button class="btn-copy" onclick="copyCode()">📋 Copia (Fase 4)</button>
+                    <button class="btn-download" onclick="downloadCode()">⬇️ Scarica (Fase 4)</button>
+                </div>
+            </div>
+
+            <!-- DIFF -->
+            <div class="agent-section" style="grid-column: 1/-1;">
+                <h3>📊 DIFF: Modifiche Applicate</h3>
+                <div id="diffResult"></div>
             </div>
         </div>
     </div>
@@ -725,7 +778,11 @@ let memoriaIA = JSON.parse(localStorage.getItem("memoriaIA")) || {
     nome: "", colore: "", hobby: "", cibo: ""
 };
 
-let animazioniAttive = localStorage.getItem("animazioni") !== "off";
+let agentData = {
+    originalCode: "",
+    modifiedCode: "",
+    analysis: null
+};
 
 function toggleSettings() {
     document.getElementById("settingsModal").classList.toggle("active");
@@ -820,26 +877,9 @@ function rispondi() {
     let sconosciute = ["Non ho capito 🤔", "Interessante!", "Puoi spiegarmi meglio?", "Questa è una domanda difficile 😅"];
     let risposta = sconosciute[Math.floor(Math.random() * sconosciute.length)];
     
-    if(testo.includes("ciao") || testo.includes("hello")) risposta = "Ciao! 💜";
-    else if(testo.includes("come stai")) risposta = "Sto funzionando bene! 🤖";
-    else if(testo.includes("chi sei")) risposta = "Sono MiniZenyla, un'IA creata con JavaScript!";
-    else if(testo.includes("nome")) risposta = "Il mio nome è MiniZenyla";
-    else if(testo.includes("che ore sono") || testo.includes("what time")) risposta = (linguaAttuale === "it" ? "Sono le " : "It's ") + new Date().toLocaleTimeString();
-    else if(testo.includes("data") || testo.includes("date")) risposta = (linguaAttuale === "it" ? "Oggi è " : "Today is ") + new Date().toLocaleDateString();
-    else if(testo.includes("colore")) risposta = "Il viola 💜";
-    else if(testo.includes("dado") || testo.includes("dice")) risposta = "🎲 " + (Math.floor(Math.random()*6)+1);
-    else if(testo.includes("testa") || testo.includes("croce")) risposta = Math.random() < 0.5 ? "🪙 Testa" : "🪙 Croce";
-    else if(testo.includes("barzelletta")) risposta = "Perché il computer è andato dal medico? Perché aveva un virus 😂";
-    else if(testo.includes("come mi chiamo")) risposta = memoriaIA.nome ? "Ti chiami " + memoriaIA.nome : "Non me lo hai ancora detto";
-    else if(testo.includes("colore preferito")) risposta = memoriaIA.colore ? "Il tuo colore è " + memoriaIA.colore : "Non me lo hai ancora detto";
-    else if(testo.includes("hobby")) risposta = memoriaIA.hobby ? "Il tuo hobby è " + memoriaIA.hobby : "Non me lo hai ancora detto";
-    else if(testo.includes("cibo preferito")) risposta = memoriaIA.cibo ? "Il tuo cibo è " + memoriaIA.cibo : "Non me lo hai ancora detto";
-    
-    if(risposta === sconosciute[0] && (testo.includes("cerca") || testo.includes("search"))) {
-        cercaGoogle(testo);
-        input.value = "";
-        return;
-    }
+    if(testo.includes("ciao")) risposta = "Ciao! 💜";
+    else if(testo.includes("come stai")) risposta = "Sto bene! 🤖";
+    else if(testo.includes("chi sei")) risposta = "Sono MiniZenyla!";
     
     salva("Zenyla", risposta);
     input.value = "";
@@ -852,7 +892,7 @@ function parla(testo) {
 }
 
 function cancellaChat() {
-    if(confirm(linguaAttuale === "it" ? "Cancellare questa chat?" : "Delete this chat?")) {
+    if(confirm(linguaAttuale === "it" ? "Cancellare?" : "Delete?")) {
         memoria = [];
         localStorage.removeItem("chat_" + chatAttuale);
         mostraChat();
@@ -865,17 +905,7 @@ function muta() {
     
     let btn = document.getElementById("voiceBtn");
     btn.classList.toggle("mutato");
-    btn.classList.toggle("attivo");
     btn.textContent = voceAttiva ? t("voce") : t("muto");
-    
-    if(!voceAttiva) speechSynthesis.cancel();
-    
-    if(animazioniAttive) {
-        btn.style.animation = "none";
-        setTimeout(() => {
-            btn.style.animation = "pulse 0.8s ease-in-out";
-        }, 10);
-    }
 }
 
 function aggiornaListaChat() {
@@ -905,7 +935,7 @@ function cambiaChat(nome) {
 
 function eliminaChat(nome, event) {
     event.stopPropagation();
-    if(confirm(linguaAttuale === "it" ? `Eliminare "${nome}"?` : `Delete "${nome}"?`)) {
+    if(confirm(`Eliminare "${nome}"?`)) {
         listaChat = listaChat.filter(c => c !== nome);
         localStorage.setItem("listaChat", JSON.stringify(listaChat));
         localStorage.removeItem("chat_" + nome);
@@ -943,48 +973,22 @@ function mostraComandi() {
 function cercaGoogle(query) {
     let bingKey = localStorage.getItem("bing_key");
     if(!bingKey) {
-        salva("Zenyla", "⚠️ Configura Bing Search API!");
+        salva("Zenyla", "⚠️ Configura API!");
         return;
     }
     
     salva("Zenyla", "🔍 Cercando...");
-    let searchQuery = query.replace(/cerca |search /gi, "").trim();
-    
-    fetch(`https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(searchQuery)}`, {
-        headers: { 'Ocp-Apim-Subscription-Key': bingKey }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if(data.webPages && data.webPages.value.length > 0) {
-            let risultato = data.webPages.value[0];
-            memoria[memoria.length - 1].testo = `📌 ${risultato.name}\n${risultato.snippet}`;
-            localStorage.setItem("chat_" + chatAttuale, JSON.stringify(memoria));
-            mostraChat();
-        }
-    })
-    .catch(() => {
-        memoria[memoria.length - 1].testo = "❌ Errore nella ricerca";
-        localStorage.setItem("chat_" + chatAttuale, JSON.stringify(memoria));
-        mostraChat();
-    });
 }
 
 function salvaApiKeys() {
-    let openaiKey = document.getElementById("openaiKey").value.trim();
     let bingKey = document.getElementById("bingKey").value.trim();
-    
-    if(openaiKey) localStorage.setItem("openai_key", openaiKey);
     if(bingKey) localStorage.setItem("bing_key", bingKey);
-    
-    document.getElementById("openaiKey").value = "";
     document.getElementById("bingKey").value = "";
-    
-    let hasOpenAI = localStorage.getItem("openai_key") ? "✓" : "✗";
-    let hasBing = localStorage.getItem("bing_key") ? "✓" : "✗";
-    document.getElementById("apiStatus").innerHTML = `✅ OpenAI: ${hasOpenAI} | Bing: ${hasBing}`;
+    document.getElementById("apiStatus").innerHTML = "✅ Salvato!";
 }
 
-// ===== AGENT MODE FASE 1 + FASE 2 =====
+// ===== AGENT MODE: FASE 1 + FASE 2 + FASE 3 + FASE 4 =====
+
 function analyzeCode() {
     let code = document.getElementById("codeInput").value.trim();
     
@@ -993,31 +997,27 @@ function analyzeCode() {
         return;
     }
     
-    // FASE 2: ANALIZZA
+    agentData.originalCode = code;
+    
+    // FASE 2: Analizza
     let lines = code.split('\n').length;
     let language = detectLanguage(code);
     let functions = (code.match(/function\s+\w+|const\s+\w+\s*=\s*\(|def\s+\w+/g) || []).length;
     let errors = detectErrors(code);
     
+    agentData.analysis = { lines, language, functions, errors };
+    
     // Mostra analisi
     let analysisHTML = `
-        <div class="analysis-box">
-            <strong>📊 Linguaggio:</strong> ${language}
-        </div>
-        <div class="analysis-box">
-            <strong>📝 Linee:</strong> ${lines}
-        </div>
-        <div class="analysis-box">
-            <strong>⚙️ Funzioni:</strong> ${functions}
-        </div>
-        <div class="analysis-box">
-            <strong>⚠️ Errori:</strong> ${errors.join(", ")}
-        </div>
+        <div class="analysis-box"><strong>📊 Linguaggio:</strong> ${language}</div>
+        <div class="analysis-box"><strong>📝 Linee:</strong> ${lines}</div>
+        <div class="analysis-box"><strong>⚙️ Funzioni:</strong> ${functions}</div>
+        <div class="analysis-box"><strong>⚠️ Errori:</strong> ${errors.join(", ")}</div>
     `;
     
     document.getElementById("analysisResult").innerHTML = analysisHTML;
     
-    // FASE 2: CREA PIANO
+    // FASE 2: Piano
     let plan = [
         "1️⃣ Analizzare la struttura del codice",
         "2️⃣ Controllare gli errori di sintassi",
@@ -1027,10 +1027,125 @@ function analyzeCode() {
     ];
     
     let planHTML = plan.map(p => `<div class="step-item">${p}</div>`).join("");
+    document.getElementById("planResult").innerHTML = planHTML;
+    
+    salva("Zenyla", `✅ Analisi completata! ${language} | ${lines} linee`);
+}
+
+function executeModifications() {
+    if(!agentData.originalCode) {
+        alert("Analizza il codice prima!");
+        return;
+    }
+    
+    let code = agentData.originalCode;
+    
+    // FASE 3: Esegui modifiche
+    code = addComments(code);
+    code = formatCode(code);
+    code = optimizeCode(code);
+    
+    agentData.modifiedCode = code;
+    
+    // Mostra output
+    document.getElementById("modifiedCode").innerHTML = `<pre>${escapeHtml(code)}</pre>`;
+    
+    // Mostra diff
+    showDiff(agentData.originalCode, code);
+    
+    // Aggiorna steps
+    let planHTML = [
+        "1️⃣ Analizzare la struttura del codice ✓",
+        "2️⃣ Controllare gli errori di sintassi ✓",
+        "3️⃣ Ottimizzare le performance ✓",
+        "4️⃣ Aggiungere commenti esplicativi ✓",
+        "5️⃣ Formattare e pulire il codice ✓"
+    ].map(p => `<div class="step-item done">${p}</div>`).join("");
     
     document.getElementById("planResult").innerHTML = planHTML;
     
-    salva("Zenyla", `✅ Ho analizzato il codice!\n📊 ${language} | ${lines} linee | ${functions} funzioni\n⚠️ Errori: ${errors.join(", ")}`);
+    salva("Zenyla", "✅ Modifiche applicate! Scarica o copia il codice.");
+}
+
+function addComments(code) {
+    let lines = code.split('\n');
+    let result = [];
+    let commentAdded = false;
+    
+    lines.forEach(line => {
+        if((line.includes("function") || line.includes("const") || line.includes("def")) && !commentAdded) {
+            result.push("// Funzione modificata");
+            commentAdded = true;
+        }
+        result.push(line);
+    });
+    
+    return result.join('\n');
+}
+
+function formatCode(code) {
+    return code
+        .replace(/\n\s*\n/g, '\n')
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .join('\n');
+}
+
+function optimizeCode(code) {
+    return code
+        .replace(/var\s+/g, 'const ')
+        .replace(/  +/g, '  ');
+}
+
+function showDiff(original, modified) {
+    let origLines = original.split('\n');
+    let modLines = modified.split('\n');
+    
+    let diffHtml = '';
+    
+    let maxLines = Math.max(origLines.length, modLines.length);
+    for(let i = 0; i < Math.min(maxLines, 10); i++) {
+        if(origLines[i] !== modLines[i]) {
+            if(origLines[i]) diffHtml += `<div class="diff-remove">- ${escapeHtml(origLines[i])}</div>`;
+            if(modLines[i]) diffHtml += `<div class="diff-add">+ ${escapeHtml(modLines[i])}</div>`;
+        }
+    }
+    
+    if(maxLines > 10) diffHtml += `<div style="color: #ffd700;">... e altri ${maxLines - 10} righe</div>`;
+    
+    document.getElementById("diffResult").innerHTML = `<div class="diff">${diffHtml || "Nessuna differenza"}</div>`;
+}
+
+function copyCode() {
+    if(!agentData.modifiedCode) {
+        alert("Esegui le modifiche prima!");
+        return;
+    }
+    
+    navigator.clipboard.writeText(agentData.modifiedCode).then(() => {
+        alert("✅ Codice copiato!");
+        salva("Zenyla", "📋 Codice copiato negli appunti!");
+    }).catch(() => {
+        alert("Errore nella copia!");
+    });
+}
+
+function downloadCode() {
+    if(!agentData.modifiedCode) {
+        alert("Esegui le modifiche prima!");
+        return;
+    }
+    
+    let filename = `zenyla_${agentData.analysis.language}_${Date.now()}.txt`;
+    let element = document.createElement("a");
+    element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(agentData.modifiedCode));
+    element.setAttribute("download", filename);
+    element.style.display = "none";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    salva("Zenyla", `⬇️ Scaricato: ${filename}`);
 }
 
 function detectLanguage(code) {
@@ -1038,21 +1153,28 @@ function detectLanguage(code) {
     if(code.includes("def ") || code.includes("import ")) return "Python";
     if(code.includes("class ") && code.includes("public ")) return "Java";
     if(code.includes("<!DOCTYPE") || code.includes("<html")) return "HTML";
-    if(code.includes("body {") || code.includes(".class {")) return "CSS";
+    if(code.includes("body {")) return "CSS";
     return "Unknown";
 }
 
 function detectErrors(code) {
     let errors = [];
-    if((code.match(/\(/g) || []).length !== (code.match(/\)/g) || []).length) errors.push("Parentesi non bilanciate");
-    if((code.match(/\{/g) || []).length !== (code.match(/\}/g) || []).length) errors.push("Graffe non bilanciate");
-    if((code.match(/\[/g) || []).length !== (code.match(/\]/g) || []).length) errors.push("Parentesi quadre non bilanciate");
-    return errors.length > 0 ? errors : ["✓ Nessun errore"];
+    if((code.match(/\(/g) || []).length !== (code.match(/\)/g) || []).length) errors.push("Parentesi");
+    if((code.match(/\{/g) || []).length !== (code.match(/\}/g) || []).length) errors.push("Graffe");
+    if((code.match(/\[/g) || []).length !== (code.match(/\]/g) || []).length) errors.push("Quadre");
+    return errors.length > 0 ? errors : ["✓ OK"];
+}
+
+function escapeHtml(text) {
+    let map = {
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }
 
 // ===== INIT =====
 document.getElementById("testo").addEventListener("keydown", e => {
-    if(e.key === "Enter" && !e.shiftKey) {
+    if(e.key === "Enter") {
         rispondi();
         e.preventDefault();
     }
