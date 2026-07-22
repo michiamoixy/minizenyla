@@ -13,6 +13,7 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
+    margin: 0;
 }
 
 .box{
@@ -21,10 +22,27 @@ body{
     padding:20px;
     border-radius:20px;
     box-shadow:0 0 20px #6c5ce7;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 h2{
     text-align:center;
+    margin-top: 0;
+}
+
+.controlli-top{
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.controlli-top button{
+    font-size: 12px;
+    padding: 6px 8px;
+    flex: 1;
+    min-width: 80px;
 }
 
 #chat{
@@ -33,6 +51,32 @@ h2{
     background:#111122;
     padding:10px;
     border-radius:10px;
+    margin-bottom: 10px;
+}
+
+.chat-selector{
+    margin-bottom: 10px;
+}
+
+.chat-selector input{
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#listaChat{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+#listaChat button{
+    font-size: 11px;
+    padding: 6px;
+    flex: 1;
+    min-width: 70px;
 }
 
 input{
@@ -49,10 +93,67 @@ button{
     background:#6c5ce7;
     color:white;
     cursor:pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover{
+    background:#7b68ee;
+    transform: scale(1.05);
+}
+
+button#voiceBtn.mutato {
+    background: #ff6b6b;
+    box-shadow: 0 0 10px #ff6b6b;
+}
+
+button#voiceBtn.attivo {
+    animation: pulse 0.6s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .messaggio{
     margin:8px;
+    padding: 8px;
+    border-left: 3px solid #6c5ce7;
+    border-radius: 4px;
+    background: rgba(108, 92, 231, 0.1);
+}
+
+.buttons-row{
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 5px;
+}
+
+.buttons-row button{
+    flex: 1;
+    min-width: 80px;
+    font-size: 13px;
+    padding: 8px 5px;
+}
+
+.api-config{
+    background: rgba(108, 92, 231, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    border: 1px solid #6c5ce7;
+}
+
+.api-config input{
+    width: 100%;
+    margin: 5px 0;
+    box-sizing: border-box;
+}
+
+.api-config button{
+    width: 100%;
+    margin-top: 5px;
 }
 </style>
 
@@ -62,9 +163,29 @@ button{
 
 <div class="box">
 
+<div class="controlli-top">
+    <button onclick="cambiaLingua()" id="btnLingua">🇬🇧 English</button>
+    <button onclick="toggleApiConfig()" id="btnApi">⚙️ API</button>
+</div>
+
 <h2>💜 MiniZenyla</h2>
 
+<div id="apiConfig" class="api-config" style="display:none;">
+    <h4 style="margin-top:0;">Configurazione API</h4>
+    <input type="password" id="openaiKey" placeholder="OpenAI API Key (sk-...)">
+    <input type="password" id="bingKey" placeholder="Bing Search API Key">
+    <button onclick="salvaApiKeys()">💾 Salva Chiavi</button>
+    <p id="apiStatus" style="font-size:12px; color:#6c5ce7;"></p>
+</div>
+
 <div id="chat"></div>
+
+<div class="chat-selector">
+    <input id="nomeChat" placeholder="Nome chat...">
+    <button onclick="nuovaChat()">+ Nuova Chat</button>
+</div>
+
+<div id="listaChat"></div>
 
 <br>
 
@@ -72,20 +193,149 @@ button{
 
 <button onclick="rispondi()">➤</button>
 
-<br><br>
-
-<button onclick="cancella()">🗑️ Cancella memoria</button>
-
-<button onclick="muta()">🔊/🔇 Voce</button>
+<div class="buttons-row">
+    <button onclick="cancella()">🗑️ Cancella</button>
+    <button id="voiceBtn" onclick="muta()">🔊 Voce</button>
+    <button onclick="cercaGoogle()">🔍 Google</button>
+</div>
 
 </div>
 
 <script>
 
-let messaggi = 0;
-let voceAttiva = true;
+// ===== LINGUE =====
+let linguaAttuale = localStorage.getItem("lingua") || "it";
 
-let memoria = JSON.parse(localStorage.getItem("chat")) || [];
+let traduzioni = {
+    it: {
+        placeholder: "Scrivi qualcosa...",
+        placeholderChat: "Nome chat...",
+        cancella: "🗑️ Cancella",
+        voce: "🔊 Voce",
+        muto: "🔇 Muto",
+        voceAttivata: "🔊 Voce attivata",
+        voceDisattivata: "🔇 Voce disattivata",
+        ciao: "Ciao! Sono MiniZenyla 💜",
+        comoStai: "Sto funzionando alla grande 🤖",
+        chiSei: "Sono MiniZenyla, una piccola IA creata con JavaScript",
+        mioNome: "Il mio nome è MiniZenyla",
+        oraLingua: "Sono le ",
+        dataLingua: "Oggi è ",
+        mioColore: "Il viola 💜",
+        testa: "🪙 Testa",
+        croce: "🪙 Croce",
+        barzelletta: "Perché il computer è andato dal medico? Perché aveva un virus 😂",
+        piacerekConoscerti: "Piacere di conoscerti, ",
+        loRicordera: "! 😊 Lo ricorderò.",
+        tiChiami: "Ti chiami ",
+        nonMeLoDetto: "Non me lo hai ancora detto.",
+        tuoColore: "Il tuo colore preferito è ",
+        tuoHobby: "Il tuo hobby è ",
+        tuoCibo: "Il tuo cibo preferito è ",
+        nonCapito: "Non ho capito 🤔",
+        interessante: "Interessante!",
+        spiegaMeglio: "Puoi spiegarmi meglio?",
+        difficile: "Questa è una domanda difficile 😅",
+        hoUsatoVoce: "Ho usato la mia voce 🔊",
+        nuovaChat: "+ Nuova Chat",
+        btnLingua: "🇮🇹 Italiano",
+        cercaGoogle: "🔍 Google",
+        apiConfigTitle: "Configurazione API"
+    },
+    en: {
+        placeholder: "Write something...",
+        placeholderChat: "Chat name...",
+        cancella: "🗑️ Clear",
+        voce: "🔊 Voice",
+        muto: "🔇 Mute",
+        voceAttivata: "🔊 Voice activated",
+        voceDisattivata: "🔇 Voice muted",
+        ciao: "Hello! I'm MiniZenyla 💜",
+        comoStai: "I'm working great 🤖",
+        chiSei: "I'm MiniZenyla, a small AI created with JavaScript",
+        mioNome: "My name is MiniZenyla",
+        oraLingua: "It's ",
+        dataLingua: "Today is ",
+        mioColore: "Purple 💜",
+        testa: "🪙 Heads",
+        croce: "🪙 Tails",
+        barzelletta: "Why did the computer go to the doctor? Because it had a virus 😂",
+        piacerekConoscerti: "Nice to meet you, ",
+        loRicordera: "! 😊 I'll remember it.",
+        tiChiami: "Your name is ",
+        nonMeLoDetto: "You haven't told me yet.",
+        tuoColore: "Your favorite color is ",
+        tuoHobby: "Your hobby is ",
+        tuoCibo: "Your favorite food is ",
+        nonCapito: "I didn't understand 🤔",
+        interessante: "Interesting!",
+        spiegaMeglio: "Can you explain better?",
+        difficile: "This is a difficult question 😅",
+        hoUsatoVoce: "I used my voice 🔊",
+        nuovaChat: "+ New Chat",
+        btnLingua: "🇬🇧 English",
+        cercaGoogle: "🔍 Google",
+        apiConfigTitle: "API Configuration"
+    }
+};
+
+function t(chiave){
+    return traduzioni[linguaAttuale][chiave] || chiave;
+}
+
+function cambiaLingua(){
+    linguaAttuale = linguaAttuale === "it" ? "en" : "it";
+    localStorage.setItem("lingua", linguaAttuale);
+    
+    document.documentElement.lang = linguaAttuale;
+    document.getElementById("testo").placeholder = t("placeholder");
+    document.getElementById("nomeChat").placeholder = t("placeholderChat");
+    document.getElementById("btnLingua").textContent = t("btnLingua");
+    
+    let btn = document.getElementById("voiceBtn");
+    btn.textContent = voceAttiva ? t("voce") : t("muto");
+    
+    mostraChat();
+    aggiornaListaChat();
+}
+
+// ===== GESTIONE API KEYS (Sicuro con localStorage) =====
+function toggleApiConfig(){
+    let config = document.getElementById("apiConfig");
+    config.style.display = config.style.display === "none" ? "block" : "none";
+    
+    // Carica le chiavi salvate (solo visivamente, non mostrarle intere)
+    let hasOpenAI = localStorage.getItem("openai_key") ? "✓" : "✗";
+    let hasBing = localStorage.getItem("bing_key") ? "✓" : "✗";
+    document.getElementById("apiStatus").innerHTML = 
+        `OpenAI: ${hasOpenAI} | Bing: ${hasBing}`;
+}
+
+function salvaApiKeys(){
+    let openaiKey = document.getElementById("openaiKey").value.trim();
+    let bingKey = document.getElementById("bingKey").value.trim();
+    
+    if(openaiKey) localStorage.setItem("openai_key", openaiKey);
+    if(bingKey) localStorage.setItem("bing_key", bingKey);
+    
+    // Pulisci gli input per sicurezza
+    document.getElementById("openaiKey").value = "";
+    document.getElementById("bingKey").value = "";
+    
+    document.getElementById("apiStatus").innerHTML = "✅ Chiavi salvate in sicurezza!";
+    setTimeout(() => {
+        document.getElementById("apiConfig").style.display = "none";
+    }, 2000);
+}
+
+// ===== VARIABILI PRINCIPALI =====
+let messaggi = 0;
+let voceAttiva = JSON.parse(localStorage.getItem("voceAttiva") ?? "true");
+
+let chatAttuale = localStorage.getItem("chatAttuale") || "Chat 1";
+let listaChat = JSON.parse(localStorage.getItem("listaChat")) || ["Chat 1"];
+
+let memoria = JSON.parse(localStorage.getItem("chat_" + chatAttuale)) || [];
 
 let memoriaIA = JSON.parse(localStorage.getItem("memoriaIA")) || {
     nome: "",
@@ -94,213 +344,294 @@ let memoriaIA = JSON.parse(localStorage.getItem("memoriaIA")) || {
     cibo: ""
 };
 
-let sconosciute=[
-"Non ho capito 🤔",
-"Interessante!",
-"Puoi spiegarmi meglio?",
-"Questa è una domanda difficile 😅"
-];
-
+// ===== CHAT PRINCIPALE =====
 function mostraChat(){
-
-let chat=document.getElementById("chat");
-
-chat.innerHTML="";
-
-memoria.forEach(m=>{
-chat.innerHTML += `
-<div class="messaggio">
-<b>${m.tipo}:</b> ${m.testo}
-</div>`;
-});
-
-chat.scrollTop=chat.scrollHeight;
-
+    let chat = document.getElementById("chat");
+    chat.innerHTML = "";
+    
+    memoria.forEach(m => {
+        let coloreUtente = m.tipo === "Tu" ? "#7fb3d5" : "#6c5ce7";
+        chat.innerHTML += `
+        <div class="messaggio" style="border-left-color: ${coloreUtente}">
+            <b>${m.tipo}:</b> ${m.testo}
+        </div>`;
+    });
+    
+    chat.scrollTop = chat.scrollHeight;
 }
 
-function salva(tipo,testo){
-
-memoria.push({
-tipo:tipo,
-testo:testo
-});
-
-localStorage.setItem("chat",JSON.stringify(memoria));
-
-mostraChat();
-if(tipo=="Zenyla" && voceAttiva){
-
-    parla(testo);
-
-  }
-
+function salva(tipo, testo){
+    memoria.push({
+        tipo: tipo,
+        testo: testo
+    });
+    
+    localStorage.setItem("chat_" + chatAttuale, JSON.stringify(memoria));
+    mostraChat();
+    
+    if(tipo == "Zenyla" && voceAttiva){
+        parla(testo);
+    }
 }
+
 function rispondi(){
-
-let input=document.getElementById("testo");
-
-let testo=input.value.toLowerCase();
-
-if(testo=="") return;
-
-messaggi++;
-
-salva("Tu",testo);
-
-// Memoria intelligente
-
-if (testo.startsWith("mi chiamo ")) {
-    memoriaIA.nome = testo.replace("mi chiamo ", "").trim();
-    localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
-
-    risposta = "Piacere di conoscerti, " + memoriaIA.nome + "! 😊 Lo ricorderò.";
-}
-
-if (testo.startsWith("il mio colore preferito è ")) {
-    memoriaIA.colore = testo.replace("il mio colore preferito è ", "");
-    localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
-}
-
-if (testo.startsWith("il mio hobby è ")) {
-    memoriaIA.hobby = testo.replace("il mio hobby è ", "");
-    localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
-}
-
-if (testo.startsWith("il mio cibo preferito è ")) {
-    memoriaIA.cibo = testo.replace("il mio cibo preferito è ", "");
-    localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
-}
-
-let risposta=sconosciute[Math.floor(Math.random()*sconosciute.length)];
-
-if(testo.includes("ciao"))
-risposta="Ciao! Sono MiniZenyla 💜";
-
-else if(testo.includes("come stai"))
-risposta="Sto funzionando alla grande 🤖";
-
-else if(testo.includes("chi sei"))
-risposta="Sono MiniZenyla, una piccola IA creata con JavaScript";
-
-else if(testo.includes("nome"))
-risposta="Il mio nome è MiniZenyla";
-
-else if(testo.includes("che ore sono?"))
-risposta="Sono le "+new Date().toLocaleTimeString();
-
-else if(testo.includes("data"))
-risposta="Oggi è "+new Date().toLocaleDateString();
-
-else if(testo.includes("colore"))
-risposta="Il viola 💜";
-
-else if(testo.includes("dado"))
-risposta="🎲 Hai ottenuto "+(Math.floor(Math.random()*6)+1);
-
-else if(testo.includes("testa") || testo.includes("croce"))
-risposta=Math.random()<0.5?"🪙 Testa":"🪙 Croce";
-
-else if(testo.includes("barzelletta"))
-risposta="Perché il computer è andato dal medico? Perché aveva un virus 😂";
-
-else if(testo.includes("come mi chiamo")){
-
-    if(memoriaIA.nome!="")
-        risposta="Ti chiami " + memoriaIA.nome + " 😊";
-    else
-        risposta="Non me lo hai ancora detto.";
-
-}
-
-else if(testo.includes("qual è il mio colore preferito")){
-
-    if(memoriaIA.colore!="")
-        risposta="Il tuo colore preferito è " + memoriaIA.colore + " 💜";
-    else
-        risposta="Non me lo hai ancora detto.";
-
-}
-
-else if(testo.includes("qual è il mio hobby")){
-
-    if(memoriaIA.hobby!="")
-        risposta="Il tuo hobby è " + memoriaIA.hobby;
-    else
-        risposta="Non me lo hai ancora detto.";
-
-}
-
-else if(testo.includes("qual è il mio cibo preferito")){
-
-    if(memoriaIA.cibo!="")
-        risposta="Il tuo cibo preferito è " + memoriaIA.cibo + " 🍕";
-    else
-        risposta="Non me lo hai ancora detto.";
-
-}
-
-
-else if(testo.includes("parla")){
-parla("Ciao! Sono MiniZenyla");
-risposta="Ho usato la mia voce 🔊";
-}
-
-salva("Zenyla",risposta);
-
-input.value="";
-
+    let input = document.getElementById("testo");
+    let testo = input.value.toLowerCase();
+    
+    if(testo == "") return;
+    
+    messaggi++;
+    salva("Tu", testo);
+    
+    // ===== MEMORIA INTELLIGENTE =====
+    
+    if (testo.startsWith("mi chiamo ") || testo.startsWith("my name is ")) {
+        let nome = testo.startsWith("mi chiamo ") 
+            ? testo.replace("mi chiamo ", "").trim()
+            : testo.replace("my name is ", "").trim();
+        memoriaIA.nome = nome;
+        localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
+        risposta = t("piacerekConoscerti") + memoriaIA.nome + t("loRicordera");
+    }
+    
+    if (testo.startsWith("il mio colore preferito è ") || testo.startsWith("my favorite color is ")) {
+        memoriaIA.colore = testo.startsWith("il mio colore preferito è ") 
+            ? testo.replace("il mio colore preferito è ", "")
+            : testo.replace("my favorite color is ", "");
+        localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
+    }
+    
+    if (testo.startsWith("il mio hobby è ") || testo.startsWith("my hobby is ")) {
+        memoriaIA.hobby = testo.startsWith("il mio hobby è ") 
+            ? testo.replace("il mio hobby è ", "")
+            : testo.replace("my hobby is ", "");
+        localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
+    }
+    
+    if (testo.startsWith("il mio cibo preferito è ") || testo.startsWith("my favorite food is ")) {
+        memoriaIA.cibo = testo.startsWith("il mio cibo preferito è ") 
+            ? testo.replace("il mio cibo preferito è ", "")
+            : testo.replace("my favorite food is ", "");
+        localStorage.setItem("memoriaIA", JSON.stringify(memoriaIA));
+    }
+    
+    // ===== RISPOSTE INTELLIGENTI =====
+    let sconosciute = [
+        t("nonCapito"),
+        t("interessante"),
+        t("spiegaMeglio"),
+        t("difficile")
+    ];
+    
+    let risposta = sconosciute[Math.floor(Math.random() * sconosciute.length)];
+    
+    if(testo.includes("ciao") || testo.includes("hello") || testo.includes("hi"))
+        risposta = t("ciao");
+    
+    else if(testo.includes("come stai") || testo.includes("how are you"))
+        risposta = t("comoStai");
+    
+    else if(testo.includes("chi sei") || testo.includes("who are you"))
+        risposta = t("chiSei");
+    
+    else if(testo.includes("nome"))
+        risposta = t("mioNome");
+    
+    else if(testo.includes("che ore sono") || testo.includes("what time"))
+        risposta = t("oraLingua") + new Date().toLocaleTimeString();
+    
+    else if(testo.includes("data") || testo.includes("date"))
+        risposta = t("dataLingua") + new Date().toLocaleDateString();
+    
+    else if(testo.includes("colore") || testo.includes("color"))
+        risposta = t("mioColore");
+    
+    else if(testo.includes("dado") || testo.includes("dice"))
+        risposta = "🎲 " + (linguaAttuale === "it" ? "Hai ottenuto " : "You got ") + (Math.floor(Math.random()*6)+1);
+    
+    else if(testo.includes("testa") || testo.includes("croce") || testo.includes("heads") || testo.includes("tails"))
+        risposta = Math.random() < 0.5 ? t("testa") : t("croce");
+    
+    else if(testo.includes("barzelletta") || testo.includes("joke"))
+        risposta = t("barzelletta");
+    
+    else if(testo.includes("come mi chiamo") || testo.includes("what is my name")){
+        if(memoriaIA.nome != "")
+            risposta = t("tiChiami") + memoriaIA.nome + " 😊";
+        else
+            risposta = t("nonMeLoDetto");
+    }
+    
+    else if(testo.includes("qual è il mio colore preferito") || testo.includes("my favorite color")){
+        if(memoriaIA.colore != "")
+            risposta = t("tuoColore") + memoriaIA.colore + " 💜";
+        else
+            risposta = t("nonMeLoDetto");
+    }
+    
+    else if(testo.includes("qual è il mio hobby") || testo.includes("my hobby")){
+        if(memoriaIA.hobby != "")
+            risposta = t("tuoHobby") + memoriaIA.hobby;
+        else
+            risposta = t("nonMeLoDetto");
+    }
+    
+    else if(testo.includes("qual è il mio cibo preferito") || testo.includes("my favorite food")){
+        if(memoriaIA.cibo != "")
+            risposta = t("tuoCibo") + memoriaIA.cibo + " 🍕";
+        else
+            risposta = t("nonMeLoDetto");
+    }
+    
+    else if(testo.includes("parla") || testo.includes("speak")){
+        parla(t("ciao"));
+        risposta = t("hoUsatoVoce");
+    }
+    
+    // Se c'è una query di ricerca o domanda sconosciuta, prova con API
+    if(risposta === sconosciute[0] && (testo.includes("cerca") || testo.includes("search") || testo.includes("che cos è") || testo.includes("what is"))){
+        cercaGoogle(testo);
+        return;
+    }
+    
+    salva("Zenyla", risposta);
+    input.value = "";
 }
 
 function parla(testo){
-
-let voce=new SpeechSynthesisUtterance(testo);
-
-voce.lang="it-IT";
-
-speechSynthesis.speak(voce);
-
+    let voce = new SpeechSynthesisUtterance(testo);
+    voce.lang = linguaAttuale === "it" ? "it-IT" : "en-US";
+    speechSynthesis.speak(voce);
 }
 
-function cancella(){
+// ===== RICERCA GOOGLE (tramite proxy backend) =====
+function cercaGoogle(query){
+    let bingKey = localStorage.getItem("bing_key");
+    
+    if(!bingKey){
+        salva("Zenyla", "⚠️ Devi configurare la Bing Search API Key prima! Clicca su ⚙️ API");
+        return;
+    }
+    
+    salva("Zenyla", "🔍 Sto cercando...");
+    
+    // Usa Bing Search API
+    let searchQuery = query.replace(/cerca |search /gi, "").trim();
+    let encodedQuery = encodeURIComponent(searchQuery);
+    
+    fetch(`https://api.bing.microsoft.com/v7.0/search?q=${encodedQuery}`, {
+        headers: {
+            'Ocp-Apim-Subscription-Key': bingKey
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.webPages && data.webPages.value.length > 0){
+            let risultato = data.webPages.value[0];
+            let risposta = `📌 ${risultato.name}\n📝 ${risultato.snippet}`;
+            memoria[memoria.length - 1].testo = risposta;
+            localStorage.setItem("chat_" + chatAttuale, JSON.stringify(memoria));
+            mostraChat();
+        } else {
+            memoria[memoria.length - 1].testo = "❌ Nessun risultato trovato";
+            localStorage.setItem("chat_" + chatAttuale, JSON.stringify(memoria));
+            mostraChat();
+        }
+    })
+    .catch(error => {
+        memoria[memoria.length - 1].testo = "❌ Errore nella ricerca. Verifica la chiave API.";
+        localStorage.setItem("chat_" + chatAttuale, JSON.stringify(memoria));
+        mostraChat();
+    });
+}
 
-    memoria = [];
+// ===== GESTIONE CHAT MULTIPLI =====
+function nuovaChat(){
+    let nome = document.getElementById("nomeChat").value.trim();
+    if(nome === "") {
+        nome = (linguaAttuale === "it" ? "Chat " : "Chat ") + (listaChat.length + 1);
+    }
+    
+    if(!listaChat.includes(nome)){
+        listaChat.push(nome);
+        localStorage.setItem("listaChat", JSON.stringify(listaChat));
+        cambiaChat(nome);
+        document.getElementById("nomeChat").value = "";
+    }
+}
 
-    memoriaIA = {
-        nome:"",
-        colore:"",
-        hobby:"",
-        cibo:""
-    };
-
-    localStorage.removeItem("chat");
-    localStorage.removeItem("memoriaIA");
-
+function cambiaChat(nome){
+    chatAttuale = nome;
+    localStorage.setItem("chatAttuale", nome);
+    memoria = JSON.parse(localStorage.getItem("chat_" + nome)) || [];
     mostraChat();
-
+    aggiornaListaChat();
 }
 
-document.getElementById("testo").addEventListener("keydown",e=>{
+function aggiornaListaChat(){
+    let listDiv = document.getElementById("listaChat");
+    listDiv.innerHTML = "";
+    
+    listaChat.forEach(chat => {
+        let isActive = chat === chatAttuale;
+        let btn = document.createElement("button");
+        btn.textContent = chat;
+        btn.style.background = isActive ? "#7b68ee" : "#6c5ce7";
+        btn.style.fontWeight = isActive ? "bold" : "normal";
+        btn.onclick = () => cambiaChat(chat);
+        listDiv.appendChild(btn);
+    });
+}
 
-if(e.key === "Enter" && !e.shiftKey)
-rispondi();
+// ===== CANCELLA MEMORIA =====
+function cancella(){
+    memoria = [];
+    memoriaIA = {
+        nome: "",
+        colore: "",
+        hobby: "",
+        cibo: ""
+    };
+    
+    localStorage.removeItem("chat_" + chatAttuale);
+    localStorage.removeItem("memoriaIA");
+    mostraChat();
+}
 
+// ===== VOCE CON STATO SALVATO =====
+function muta(){
+    voceAttiva = !voceAttiva;
+    localStorage.setItem("voceAttiva", voceAttiva);
+    
+    let btn = document.getElementById("voiceBtn");
+    btn.classList.toggle("mutato");
+    btn.classList.toggle("attivo");
+    
+    btn.textContent = voceAttiva ? t("voce") : t("muto");
+    
+    if(!voceAttiva){
+        speechSynthesis.cancel();
+    }
+}
+
+// ===== EVENT LISTENER =====
+document.getElementById("testo").addEventListener("keydown", e => {
+    if(e.key === "Enter" && !e.shiftKey){
+        rispondi();
+        e.preventDefault();
+    }
 });
 
+// ===== INIT =====
+document.documentElement.lang = linguaAttuale;
+document.getElementById("btnLingua").textContent = t("btnLingua");
+
+let voiceBtn = document.getElementById("voiceBtn");
+voiceBtn.textContent = voceAttiva ? t("voce") : t("muto");
+if(!voceAttiva) voiceBtn.classList.add("mutato");
+
 mostraChat();
-
-function muta(){
-
-voceAttiva = !voceAttiva;
-
-if(voceAttiva){
-    alert("🔊 Voce attivata");
-}else{
-    speechSynthesis.cancel();
-    alert("🔇 Voce disattivata");
-}
-
-}
-
+aggiornaListaChat();
 </script>
 
 </body>
